@@ -2,7 +2,7 @@
 
 MACS §7: Tiered knowledge lifecycle and memory compression for agent sessions.
 
-**Status:** v0.1 — 13 tests
+**Status:** v0.2 — 27 tests (dfsms 13 + skills 14)
 
 ## What
 
@@ -29,7 +29,30 @@ hotToWarm, warmToCold, coldToArchive := s.Migrate()
 
 // Search archived context
 results := s.Recall("event sourcing", "session-1", 5)
+
+// Promote archived context to hot tier on demand
+s.Promote("ctx-1")
 ```
+
+## Skill seeding
+
+The `pkg/skills` package extends Curator to manage *skills* (executable
+knowledge): personal → shared → promoted → org-pack lifecycle, adapted from
+QM's skill governance with agent-native grants and policy gates.
+
+```go
+import "github.com/deeparchi-ai/macs-dfsms-go/pkg/skills"
+
+st := skills.NewStore(skills.DefaultPromotionPolicy())
+st.AddSeed(&skills.Skill{ID: "lark-im-reply@1.0.0", Name: "lark-im-reply",
+    Version: "1.0.0", Owner: "cm-success"})
+st.Transition("lark-im-reply@1.0.0", skills.StageShared)
+st.GrantShare("lark-im-reply@1.0.0", "cm-success", "cm-bridge")
+
+ok, failures := st.PromotionEligible("lark-im-reply@1.0.0")
+```
+
+Design spec: `macs/specs/curator-skill-seeding.md`.
 
 ## License
 
